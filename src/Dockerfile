@@ -10,11 +10,17 @@ COPY package*.json ./
 # Instalar dependências
 RUN npm install
 
+# Instalar o Sequelize CLI globalmente
+RUN npm install -g sequelize-cli
+
+RUN npm install -g nodemon
+
 # Copiar o código para dentro da imagem
 COPY . .
 
 # Expor a porta usada pela API
 EXPOSE 3000
 
-# Iniciar o backend
-CMD ["npm", "start"]
+# Comando para rodar as migrations e iniciar a aplicação
+CMD sequelize db:migrate && npm run devStart
+

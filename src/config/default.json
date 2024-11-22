@@ -6,5 +6,6 @@
       "host": "db",
       "dialect": "mysql",
       "logging": false
-    }
+    },
+    "jwtSecret": "example",
   }
