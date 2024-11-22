@@ -1,0 +1,403 @@
+openapi: 3.0.0
+info:
+  title: Sistema de Controle Financeiro
+  description: API para gerenciamento de contas, categorias, registros financeiros e configurações do sistema de controle financeiro.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Servidor local de desenvolvimento
+paths:
+  /users:
+    post:
+      summary: Cria um novo usuário
+      tags:
+        - Usuários
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                preferences:
+                  type: object
+              required:
+                - full_name
+                - email
+                - password
+      responses:
+        201:
+          description: Usuário criado com sucesso
+        400:
+          description: Erro na criação do usuário
+    get:
+      summary: Lista todos os usuários
+      tags:
+        - Usuários
+      responses:
+        200:
+          description: Lista de usuários
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    full_name:
+                      type: string
+                    email:
+                      type: string
+                    subscription_status:
+                      type: string
+  /users/{id}:
+    get:
+      summary: Obtém um usuário pelo ID
+      tags:
+        - Usuários
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Dados do usuário
+        404:
+          description: Usuário não encontrado
+    put:
+      summary: Atualiza um usuário pelo ID
+      tags:
+        - Usuários
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                email:
+                  type: string
+                subscription_status:
+                  type: string
+                preferences:
+                  type: object
+      responses:
+        200:
+          description: Usuário atualizado
+        400:
+          description: Erro na atualização
+    delete:
+      summary: Exclui um usuário pelo ID
+      tags:
+        - Usuários
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Usuário excluído
+        404:
+          description: Usuário não encontrado
+  /categories:
+    post:
+      summary: Cria uma nova categoria
+      tags:
+        - Categorias
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                user_id:
+                  type: integer
+              required:
+                - name
+                - user_id
+      responses:
+        201:
+          description: Categoria criada
+        400:
+          description: Erro na criação da categoria
+    get:
+      summary: Lista todas as categorias
+      tags:
+        - Categorias
+      responses:
+        200:
+          description: Lista de categorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    user_id:
+                      type: integer
+  /categories/{id}:
+    get:
+      summary: Obtém uma categoria pelo ID
+      tags:
+        - Categorias
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Dados da categoria
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  user_id:
+                    type: integer
+        404:
+          description: Categoria não encontrada
+    put:
+      summary: Atualiza uma categoria pelo ID
+      tags:
+        - Categorias
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        200:
+          description: Categoria atualizada
+        400:
+          description: Erro na atualização da categoria
+    delete:
+      summary: Exclui uma categoria pelo ID
+      tags:
+        - Categorias
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Categoria excluída
+        404:
+          description: Categoria não encontrada
+  /accounts:
+    post:
+      summary: Cria uma nova conta
+      tags:
+        - Contas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: ['Conta Corrente', 'Cartão de Crédito', 'Outro']
+                balance:
+                  type: number
+                  format: float
+                user_id:
+                  type: integer
+              required:
+                - name
+                - type
+                - user_id
+      responses:
+        201:
+          description: Conta criada
+        400:
+          description: Erro na criação da conta
+    get:
+      summary: Lista todas as contas
+      tags:
+        - Contas
+      responses:
+        200:
+          description: Lista de contas
+  /accounts/{id}:
+    put:
+      summary: Atualiza uma conta pelo ID
+      tags:
+        - Contas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                balance:
+                  type: number
+      responses:
+        200:
+          description: Conta atualizada
+    delete:
+      summary: Exclui uma conta pelo ID
+      tags:
+        - Contas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Conta excluída
+  /financial-records:
+    post:
+      summary: Adiciona um novo registro financeiro
+      tags:
+        - Registros Financeiros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                amount:
+                  type: number
+                type:
+                  type: string
+                  enum: ['Receita', 'Despesa']
+                date:
+                  type: string
+                  format: date
+                account_id:
+                  type: integer
+                category_id:
+                  type: integer
+                user_id:
+                  type: integer
+              required:
+                - description
+                - amount
+                - type
+                - date
+                - user_id
+      responses:
+        201:
+          description: Registro criado
+        400:
+          description: Erro na criação do registro
+    get:
+      summary: Lista todos os registros financeiros
+      tags:
+        - Registros Financeiros
+      responses:
+        200:
+          description: Lista de registros financeiros
+  /financial-records/{id}:
+    put:
+      summary: Atualiza um registro financeiro pelo ID
+      tags:
+        - Registros Financeiros
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                amount:
+                  type: number
+                type:
+                  type: string
+                date:
+                  type: string
+                account_id:
+                  type: integer
+                category_id:
+                  type: integer
+      responses:
+        200:
+          description: Registro atualizado
+        400:
+          description: Erro na atualização
+    delete:
+      summary: Exclui um registro financeiro pelo ID
+      tags:
+        - Registros Financeiros
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Registro excluído

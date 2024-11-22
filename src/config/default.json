@@ -1,0 +1,10 @@
+{
+    "database": {
+      "name": "financial_control",
+      "user": "root",
+      "password": "example",
+      "host": "localhost",
+      "dialect": "mysql",
+      "logging": false
+    }
+  }
