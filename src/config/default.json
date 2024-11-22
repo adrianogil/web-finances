@@ -1,9 +1,9 @@
 {
     "database": {
-      "name": "financial_control",
+      "name": "FinancialControl",
       "user": "root",
       "password": "example",
-      "host": "localhost",
+      "host": "db",
       "dialect": "mysql",
       "logging": false
     }
