@@ -30,7 +30,8 @@ const Account = sequelize.define('Account', {
     onDelete: 'CASCADE', // Exclui contas associadas ao excluir o usuário
   },
 }, {
-  timestamps: true, // Adiciona createdAt e updatedAt
+    tableName: 'Account', // Garante que o Sequelize usa o nome correto
+    timestamps: true, // Adiciona createdAt e updatedAt
 });
 
 module.exports = Account;

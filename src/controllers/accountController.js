@@ -3,13 +3,14 @@ const accountService = require('../services/accountService');
 // Cria uma nova conta
 exports.createAccount = async (req, res, next) => {
   try {
-    const { name, type, balance, user_id } = req.body;
+    const { name, type, balance} = req.body;
+    const user = req.user;
 
-    if (!name || !type || !user_id) {
-      return res.status(400).json({ error: 'Os campos "name", "type" e "user_id" são obrigatórios.' });
+    if (!name || !type) {
+      return res.status(400).json({ error: 'Os campos "name", "type" são obrigatórios.' });
     }
 
-    const account = await accountService.createAccount({ name, type, balance: balance || 0.0, user_id });
+    const account = await accountService.createAccount({ name, type, balance: balance || 0.0}, user);
     res.status(201).json(account);
   } catch (error) {
     next(error);
@@ -19,9 +20,10 @@ exports.createAccount = async (req, res, next) => {
 // Lista todas as contas
 exports.getAllAccounts = async (req, res, next) => {
   try {
-    const accounts = await accountService.getAllAccounts();
+    const accounts = await accountService.getAllAccounts(req.user);
     res.json(accounts);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

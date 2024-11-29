@@ -1,15 +1,18 @@
 const Account = require('../models/accountModel');
 
 // Cria uma nova conta
-exports.createAccount = async (accountData) => {
-  return await Account.create(accountData);
+exports.createAccount = async (accountData, user) => {
+    accountData.user_id = user.id; // Adiciona o ID do usuário à conta
+    return await Account.create(accountData);
 };
 
 // Lista todas as contas
-exports.getAllAccounts = async () => {
-  return await Account.findAll({
+exports.getAllAccounts = async (user) => {
+
+return await Account.findAll({
+    where: { user_id: user.id }, // Filtra as contas pelo ID do usuário
     attributes: ['id', 'name', 'type', 'balance', 'user_id'], // Seleciona apenas os campos necessários
-  });
+});
 };
 
 // Obtém uma conta pelo ID

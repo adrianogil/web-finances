@@ -7,5 +7,5 @@
       "dialect": "mysql",
       "logging": false
     },
-    "jwtSecret": "example",
+    "jwtSecret": "example"
   }

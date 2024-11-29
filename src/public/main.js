@@ -55,3 +55,106 @@ document.addEventListener('click', function(event) {
         submenu.style.transform = 'translateY(0)';
     }
 });
+
+const token = localStorage.getItem('jwtToken');
+
+if (!token) {
+    alert('Usuário não autenticado. Por favor, faça login.');
+    window.location.href = 'login.html';
+}
+
+async function fetchAccounts() {
+    try {
+        const response = await fetch('/api/accounts', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        console.log(response);
+
+        if (!response.ok) {
+            throw new Error('Erro ao carregar contas.');
+        }
+
+        const accounts = await response.json();
+        accountsList.innerHTML = '';
+
+        accounts.forEach(account => {
+            const listItem = document.createElement('li');
+            listItem.textContent = account.name;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Excluir';
+            deleteButton.classList.add('delete');
+            deleteButton.onclick = () => deleteAccount(account.id);
+
+            listItem.appendChild(deleteButton);
+            accountsList.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error('Erro ao buscar contas:', error);
+        alert('Erro ao carregar contas. Por favor, tente novamente.');
+    }
+}
+
+async function addAccount(event) {
+    event.preventDefault(); // Impede o comportamento padrão do formulário
+
+    const accountName = document.getElementById('accountName').value.trim();
+    const accountType = document.getElementById('accountType').value.trim();
+
+    if (!accountName || !accountType) {
+        alert('Por favor, preencha todos os campos.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/accounts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name: accountName, type: accountType })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao adicionar conta.');
+        }
+
+        alert('Conta adicionada com sucesso!');
+        fetchAccounts(); // Atualiza a lista de contas
+        closeModal(); // Fecha o modal
+    } catch (error) {
+        console.error('Erro ao adicionar conta:', error);
+        alert('Erro ao adicionar conta. Por favor, tente novamente.');
+    }
+}
+
+async function deleteAccount(accountId) {
+    if (!confirm('Tem certeza de que deseja excluir esta conta?')) return;
+
+    try {
+        const response = await fetch(`/api/accounts/${accountId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao excluir conta.');
+        }
+
+        alert('Conta excluída com sucesso!');
+        fetchAccounts(); // Atualiza a lista de contas
+    } catch (error) {
+        console.error('Erro ao excluir conta:', error);
+        alert('Erro ao excluir conta. Por favor, tente novamente.');
+    }
+}
+
+// Carrega as contas ao inicializar
+fetchAccounts();

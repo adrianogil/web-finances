@@ -22,9 +22,9 @@ app.use(express.json());
 // Configurar rotas da API REST
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/categories', categoryRoutes, authenticateToken);
-app.use('/api/accounts', accountRoutes, authenticateToken);
-app.use('/api/financial-records', financialRecordRoutes, authenticateToken);
+app.use('/api/categories', authenticateToken, categoryRoutes);
+app.use('/api/accounts', authenticateToken, accountRoutes);
+app.use('/api/financial-records', authenticateToken, financialRecordRoutes);
 
 // Configurar para servir arquivos estáticos do frontend
 app.use(express.static(path.join(__dirname, 'public')));

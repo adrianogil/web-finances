@@ -26,9 +26,8 @@
     <div class="content">
         <aside class="sidebar">
             <h2>Contas</h2>
-            <ul>
-                <li>Conta Corrente<button class="delete">Excluir</button></li>
-                <li>Conta de Crédito <button class="delete">Excluir</button></li>
+            <ul id="accounts-list">
+                <!-- As contas serão carregadas dinamicamente aqui -->
             </ul>
             <button id="adicionar-conta">Adicionar Conta</button>
             <h2>Categorias</h2>
@@ -173,7 +172,7 @@
       <form id="addAccountForm">
         <input type="text" id="accountName" placeholder="Nome da Conta" required />
         <input type="text" id="accountType" placeholder="Tipo de Conta" required />
-        <button type="submit">Salvar Conta</button>
+        <button id="addAccountButton" type="submit">Salvar Conta</button>
       </form>
     </div>
   </div>
@@ -192,6 +191,11 @@
 
 
   <script>
+    const accountsList = document.getElementById('accounts-list');
+    const addAccountModal = document.getElementById('addAccountModal');
+    const addAccountForm = document.getElementById('addAccountForm');
+    const closeModalButton = document.querySelector('.close');
+
     // Get the modal element
     var modal = document.getElementById("addAccountModal");
 
@@ -203,7 +207,11 @@
 
     // When the user clicks the button, open the modal
     btn.onclick = function() {
-      modal.style.display = "block";
+        modal.style.display = "block";
+        // Evento para adicionar conta
+        const addAccountButton = document.getElementById('addAccountButton');
+        addAccountButton.removeEventListener('click', addAccount); // Remove any existing event listener
+        addAccountButton.addEventListener('click', addAccount);
     }
 
     // When the user clicks on <span> (x), close the modal
@@ -247,6 +255,11 @@
     // When the user clicks the button, open the modal
     categoryBtn.onclick = function() {
       categoryModal.style.display = "block";
+    }
+
+    function closeModal() {
+        addAccountModal.style.display = 'none';
+        addAccountForm.reset();
     }
 
     // When the user clicks on <span> (x), close the modal
