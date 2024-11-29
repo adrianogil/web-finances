@@ -31,13 +31,8 @@
             </ul>
             <button id="adicionar-conta">Adicionar Conta</button>
             <h2>Categorias</h2>
-            <ul>
-                <li>Salário<button class="delete">Excluir</button></li>
-                <li>Alimentação<button class="delete">Excluir</button></li>
-                <li>Transporte<button class="delete">Excluir</button></li>
-                <li>Moradia<button class="delete">Excluir</button></li>
-                <li>Utilidades<button class="delete">Excluir</button></li>
-                <li>Serviços<button class="delete">Excluir</button></li>
+            <ul id="categories-list">
+                <!-- As categorias serão carregadas dinamicamente aqui -->
             </ul>
             <button id="adicionar-categoria" >Adicionar Categoria</button>
         </aside>
@@ -243,6 +238,30 @@
 
 
 <script>
+    const categoriesList = document.getElementById('categories-list'); // Lista de categorias
+    const addCategoryModal = document.getElementById('addCategoryModal'); // Modal de adicionar categoria
+    const addCategoryForm = document.getElementById('addCategoryForm'); // Formulário de adicionar categoria
+    const addCategoryButton = document.getElementById('adicionar-categoria'); // Botão para abrir modal
+    const closeCategoryModalButton = document.querySelector('#addCategoryModal .close'); // Botão de fechar modal
+
+    // Função para fechar o modal de categorias
+    function closeCategoryModal() {
+        addCategoryModal.style.display = 'none';
+        addCategoryForm.reset();
+    }
+
+    // Eventos para abrir e fechar o modal de categorias
+    closeCategoryModalButton.addEventListener('click', closeCategoryModal);
+    window.addEventListener('click', event => {
+        if (event.target === addCategoryModal) {
+            closeCategoryModal();
+        }
+    });
+
+    // Evento para adicionar categoria ao enviar o formulário
+    addCategoryForm.addEventListener('submit', addCategory);
+
+
     // Get the modal element for adding category
     var categoryModal = document.getElementById("addCategoryModal");
 

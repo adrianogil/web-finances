@@ -22,7 +22,8 @@ const Category = sequelize.define('Category', {
     onDelete: 'CASCADE', // Exclui categorias associadas ao excluir o usuário
   },
 }, {
-  timestamps: true, // Adiciona colunas createdAt e updatedAt automaticamente
+    tableName: 'Category', // Garante que o Sequelize usa o nome correto
+    timestamps: true, // Adiciona colunas createdAt e updatedAt automaticamente
 });
 
 module.exports = Category;

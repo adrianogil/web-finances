@@ -156,5 +156,101 @@ async function deleteAccount(accountId) {
     }
 }
 
+// Função para buscar categorias
+async function fetchCategories() {
+    try {
+        const response = await fetch('/api/categories', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao carregar categorias.');
+        }
+
+        const categories = await response.json();
+        categoriesList.innerHTML = '';
+
+        categories.forEach(category => {
+            const listItem = document.createElement('li');
+            listItem.textContent = category.name;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Excluir';
+            deleteButton.classList.add('delete');
+            deleteButton.onclick = () => deleteCategory(category.id);
+
+            listItem.appendChild(deleteButton);
+            categoriesList.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+        alert('Erro ao carregar categorias. Por favor, tente novamente.');
+    }
+}
+
+// Função para adicionar categoria
+async function addCategory(event) {
+    event.preventDefault();
+
+    const categoryName = document.getElementById('categoryName').value.trim();
+
+    if (!categoryName) {
+        alert('Por favor, preencha o nome da categoria.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/categories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name: categoryName })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao adicionar categoria.');
+        }
+
+        alert('Categoria adicionada com sucesso!');
+        fetchCategories(); // Atualiza a lista de categorias
+        closeCategoryModal(); // Fecha o modal
+    } catch (error) {
+        console.error('Erro ao adicionar categoria:', error);
+        alert('Erro ao adicionar categoria. Por favor, tente novamente.');
+    }
+}
+
+// Função para excluir categoria
+async function deleteCategory(categoryId) {
+    if (!confirm('Tem certeza de que deseja excluir esta categoria?')) return;
+
+    try {
+        const response = await fetch(`/api/categories/${categoryId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao excluir categoria.');
+        }
+
+        alert('Categoria excluída com sucesso!');
+        fetchCategories(); // Atualiza a lista de categorias
+    } catch (error) {
+        console.error('Erro ao excluir categoria:', error);
+        alert('Erro ao excluir categoria. Por favor, tente novamente.');
+    }
+}
+
 // Carrega as contas ao inicializar
 fetchAccounts();
+
+// Carrega as categorias ao inicializar
+fetchCategories();
