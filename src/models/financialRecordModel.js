@@ -54,7 +54,8 @@ const FinancialRecord = sequelize.define('FinancialRecord', {
     onDelete: 'CASCADE', // Exclui registros associados ao excluir o usuário
   },
 }, {
-  timestamps: true, // Adiciona as colunas createdAt e updatedAt automaticamente
+    tableName: 'FinancialRecord',
+    timestamps: true, // Adiciona as colunas createdAt e updatedAt automaticamente
 });
 
 module.exports = FinancialRecord;

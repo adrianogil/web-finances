@@ -11,14 +11,21 @@ exports.getAllAccounts = async (user) => {
 
 return await Account.findAll({
     where: { user_id: user.id }, // Filtra as contas pelo ID do usuário
-    attributes: ['id', 'name', 'type', 'balance', 'user_id'], // Seleciona apenas os campos necessários
+    attributes: ['id', 'name', 'type', 'balance'], // Seleciona apenas os campos necessários
 });
 };
 
 // Obtém uma conta pelo ID
 exports.getAccountById = async (id) => {
   return await Account.findByPk(id, {
-    attributes: ['id', 'name', 'type', 'balance', 'user_id'],
+    attributes: ['id', 'name', 'type', 'balance'], // Seleciona apenas os campos necessários
+  });
+};
+
+exports.getAccountByName = async (name) => {
+  return await Account.findOne({
+    where: { name },
+    attributes: ['id', 'name', 'type', 'balance'], // Seleciona apenas os campos necessários
   });
 };
 

@@ -1,13 +1,15 @@
 const FinancialRecord = require('../models/financialRecordModel');
 
 // Cria um novo registro financeiro
-exports.createFinancialRecord = async (recordData) => {
-  return await FinancialRecord.create(recordData);
+exports.createFinancialRecord = async (recordData, user) => {
+    recordData.user_id = user.id;
+    return await FinancialRecord.create(recordData);
 };
 
 // Lista todos os registros financeiros
-exports.getAllFinancialRecords = async () => {
+exports.getAllFinancialRecords = async (user) => {
   return await FinancialRecord.findAll({
+    where: { user_id: user.id },
     attributes: ['id', 'description', 'amount', 'type', 'date', 'account_id', 'category_id', 'user_id'],
   });
 };

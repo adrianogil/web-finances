@@ -1,12 +1,40 @@
 const financialRecordService = require('../services/financialRecordService');
 
+const { getAccountByName, getAccountById } = require('../services/accountService');
+const { getCategoryByName, getCategoryById } = require('../services/categoryService');
+const { get } = require('config');
+
+async function getFinancialRecordResponse(financialRecord) {
+    return {
+        id: financialRecord.id,
+        description: financialRecord.description,
+        amount: financialRecord.amount,
+        type: financialRecord.type,
+        date: financialRecord.date,
+        account: await getAccountById(financialRecord.account_id),
+        category: await getCategoryById(financialRecord.category_id),
+    };
+}
+
+
 // Cria um novo registro financeiro
 exports.createFinancialRecord = async (req, res, next) => {
   try {
-    const { description, amount, type, date, account_id, category_id, user_id } = req.body;
+    const { description, amount, type, date, account, category} = req.body;
+    const user = req.user;
 
-    if (!description || !amount || !type || !date || !user_id) {
-      return res.status(400).json({ error: 'Os campos "description", "amount", "type", "date" e "user_id" são obrigatórios.' });
+    if (!description || !amount || !type || !date || !account || !category) {
+      return res.status(400).json({ error: 'Os campos "description", "amount", "type", "date", "account" e "category" são obrigatórios.' });
+    }
+
+    const accountData = await getAccountByName(account);
+    if (!accountData) {
+        return res.status(404).json({ error: 'Conta não encontrada.' });
+    }
+
+    const categoryData = await getCategoryByName(category);
+    if (!categoryData) {
+        return res.status(404).json({ error: 'Categoria não encontrada.' });
     }
 
     const financialRecord = await financialRecordService.createFinancialRecord({
@@ -14,11 +42,11 @@ exports.createFinancialRecord = async (req, res, next) => {
       amount,
       type,
       date,
-      account_id,
-      category_id,
-      user_id,
-    });
-    res.status(201).json(financialRecord);
+      account_id: accountData.id,
+      category_id: categoryData.id,
+    }, user);
+
+    res.status(201).json(await getFinancialRecordResponse(financialRecord));
   } catch (error) {
     next(error);
   }
@@ -26,12 +54,17 @@ exports.createFinancialRecord = async (req, res, next) => {
 
 // Lista todos os registros financeiros
 exports.getAllFinancialRecords = async (req, res, next) => {
-  try {
-    const financialRecords = await financialRecordService.getAllFinancialRecords();
-    res.json(financialRecords);
-  } catch (error) {
-    next(error);
-  }
+    const user = req.user;
+    try {
+        const financialRecords = await financialRecordService.getAllFinancialRecords(user);
+        const financialRecordsResponse = await Promise.all(
+            financialRecords.map(async (record) => await getFinancialRecordResponse(record))
+        );
+        res.json(financialRecordsResponse);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
 };
 
 // Obtém um registro financeiro pelo ID
@@ -44,7 +77,7 @@ exports.getFinancialRecordById = async (req, res, next) => {
       return res.status(404).json({ error: 'Registro financeiro não encontrado.' });
     }
 
-    res.json(financialRecord);
+    res.json(getFinancialRecordResponse(financialRecord));
   } catch (error) {
     next(error);
   }
@@ -73,7 +106,7 @@ exports.updateFinancialRecord = async (req, res, next) => {
       return res.status(404).json({ error: 'Registro financeiro não encontrado.' });
     }
 
-    res.json(updatedRecord);
+    res.json(getFinancialRecordResponse(updatedRecord));
   } catch (error) {
     next(error);
   }

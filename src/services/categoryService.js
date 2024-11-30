@@ -11,14 +11,26 @@ exports.getAllCategories = async (user) => {
     return await Category.findAll({
         where: {
             user_id: user.id
-        }
+        },
+        attributes: ['id', 'name'], // Moved attributes into the main object
     });
 };
 
 // Obtém uma categoria pelo ID
 exports.getCategoryById = async (id) => {
-  return await Category.findByPk(id);
+    return await Category.findByPk(id, {
+        attributes: ['id', 'name'],
+    });
 };
+
+// Obtém uma categoria pelo nome
+exports.getCategoryByName = async (name) => {
+    return await Category.findOne({
+        where: { name },
+        attributes: ['id', 'name'], // Moved attributes into the main object
+    });
+};
+
 
 // Atualiza uma categoria pelo ID
 exports.updateCategory = async (id, updatedData) => {
