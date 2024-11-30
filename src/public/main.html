@@ -14,7 +14,7 @@
         <div>Aplicativo de Controle Financeiro</div>
         <div class="user-info">
             <div class="user-icon">U</div>
-            <span>Usuário Logado</span>
+            <span id="user-name">Usuário Logado</span>
             <div class="submenu">
                 <a href="userprofile.html"><i class="fas fa-user"></i> Ver Perfil</a>
                 <a href="settings.html"><i class="fas fa-cog"></i> Configurações</a>
@@ -391,6 +391,12 @@
         alert('Erro ao salvar registro financeiro. Por favor, tente novamente.');
     }
 });
+
+const userNameElement = document.getElementById('user-name');
+const userName = localStorage.getItem('userName');
+if (userName) {
+    userNameElement.textContent = JSON.parse(userName);
+}
               </script>
         </main>
     </div>
