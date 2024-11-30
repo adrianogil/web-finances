@@ -342,7 +342,10 @@ function updateFinancialRecordsTable(records) {
 
         // Data
         const dateCell = document.createElement('td');
-        dateCell.textContent = new Date(record.date).toLocaleDateString('pt-BR');
+        const originalDate = new Date(record.date);
+        const adjustedDate = new Date(originalDate); // Create a new Date object
+        adjustedDate.setDate(originalDate.getDate() + 1); // Add 1 day
+        dateCell.textContent = adjustedDate.toLocaleDateString('pt-BR');
         row.appendChild(dateCell);
 
         // Tipo (Receita ou Despesa)
@@ -370,10 +373,18 @@ function updateFinancialRecordsTable(records) {
 
         // Valor
         const amountCell = document.createElement('td');
-        const amount = parseFloat(record.amount);
+        let amount = parseFloat(record.amount);
+
+        if (record.type === 'Despesa' && amount > 0) {
+            amount *= -1; // Inverte o sinal para despesas
+        }
+
         amountCell.textContent = `${record.type === 'Receita' ? '+' : '-'}R$ ${amount.toFixed(2)}`;
         amountCell.style.color = record.type === 'Receita' ? 'green' : 'red';
         row.appendChild(amountCell);
+
+        console.log(record);
+        console.log(record.description + " - " + amount);
 
         // Atualiza o saldo total
         totalBalance += amount;
@@ -439,8 +450,13 @@ function updateCharts(records) {
         const type = record.type;
         const category = record.category.name;
         let amount = parseFloat(record.amount);
-        // console.log(amount);
-        const date = new Date(record.date).toLocaleDateString('pt-BR');
+        if (record.type === 'Despesa' && amount > 0) {
+            amount *= -1; // Inverte o sinal para despesas
+        }
+        const originalDate = new Date(record.date);
+        const adjustedDate = new Date(originalDate); // Create a new Date object
+        adjustedDate.setDate(originalDate.getDate() + 1); // Add 1 day
+        const date = adjustedDate.toLocaleDateString('pt-BR');
 
         // Only consider expenses (Despesa) for the pie chart
         if (type === 'Despesa') {
@@ -470,7 +486,6 @@ function updateCharts(records) {
     balanceChart.data.datasets[0].data = balances;
     balanceChart.update();
 }
-
 
 // Carrega as contas ao inicializar
 fetchAccounts();
