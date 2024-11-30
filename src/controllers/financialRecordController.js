@@ -23,18 +23,36 @@ exports.createFinancialRecord = async (req, res, next) => {
     const { description, amount, type, date, account, category} = req.body;
     const user = req.user;
 
+    console.log(req.body);
+
     if (!description || !amount || !type || !date || !account || !category) {
       return res.status(400).json({ error: 'Os campos "description", "amount", "type", "date", "account" e "category" são obrigatórios.' });
     }
 
-    const accountData = await getAccountByName(account);
-    if (!accountData) {
-        return res.status(404).json({ error: 'Conta não encontrada.' });
+    let accountId, categoryId;
+
+    // Check if account is a integer
+    if (!isNaN(account)) {
+        accountId = account;
+    } else {
+        const accountData = await getAccountByName(account);
+        if (!accountData) {
+            return res.status(404).json({ error: 'Conta não encontrada.' });
+        } else {
+            accountId = accountData.id;
+        }
     }
 
-    const categoryData = await getCategoryByName(category);
-    if (!categoryData) {
-        return res.status(404).json({ error: 'Categoria não encontrada.' });
+    // Check if category is a integer
+    if (!isNaN(category)) {
+        categoryId = category;
+    } else {
+        const categoryData = await getCategoryByName(category);
+        if (!categoryData) {
+            return res.status(404).json({ error: 'Categoria não encontrada.' });
+        } else {
+            categoryId = categoryData.id;
+        }
     }
 
     const financialRecord = await financialRecordService.createFinancialRecord({
@@ -42,8 +60,8 @@ exports.createFinancialRecord = async (req, res, next) => {
       amount,
       type,
       date,
-      account_id: accountData.id,
-      category_id: categoryData.id,
+      account_id: accountId,
+      category_id: categoryId,
     }, user);
 
     res.status(201).json(await getFinancialRecordResponse(financialRecord));
@@ -52,20 +70,37 @@ exports.createFinancialRecord = async (req, res, next) => {
   }
 };
 
-// Lista todos os registros financeiros
 exports.getAllFinancialRecords = async (req, res, next) => {
     const user = req.user;
+    const { month, category, account, year } = req.query;
+
     try {
-        const financialRecords = await financialRecordService.getAllFinancialRecords(user);
+        const categoryId = category ? await getCategoryByName(category) : undefined;
+        const accountId = account ? await getAccountByName(account) : undefined;
+
+        // Se o ano não for fornecido, usa o ano atual
+        const currentYear = year ? parseInt(year) : new Date().getFullYear();
+
+        const filters = {
+            month: month ? parseInt(month) : undefined,
+            year: currentYear,
+            categoryId: categoryId ? parseInt(categoryId) : undefined,
+            accountId: accountId ? parseInt(accountId) : undefined
+        };
+
+        const financialRecords = await financialRecordService.getAllFinancialRecords(user, filters);
         const financialRecordsResponse = await Promise.all(
             financialRecords.map(async (record) => await getFinancialRecordResponse(record))
         );
+
         res.json(financialRecordsResponse);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         next(error);
     }
 };
+
+
 
 // Obtém um registro financeiro pelo ID
 exports.getFinancialRecordById = async (req, res, next) => {

@@ -13,7 +13,6 @@ const { authenticateToken } = require('./middlewares/authMiddleware');
 // Middleware de tratamento de erros
 const errorHandler = require('./middlewares/errorHandler');
 
-
 const app = express();
 
 // Configurar middleware para analisar JSON
