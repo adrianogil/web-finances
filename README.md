@@ -1,4 +1,4 @@
-# Web Finances - Trabalho de Casa UFAM
+# Web Finances
 
 Este projeto é um sistema de controle financeiro pessoal desenvolvido como trabalho da disciplina **"Tópicos Avançados de Engenharia de Software"**, ministrada pelo professor Bruno Gadelha na **Universidade Federal do Amazonas (UFAM)**.
 
