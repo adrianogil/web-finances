@@ -1,0 +1,31 @@
+@startuml
+
+actor "Client" as client
+participant "Server" as server
+participant "authMiddleware" as middleware
+participant "JWT" as jwt
+
+client -> server: Send Request with Authorization Header
+server -> middleware: authenticateToken(req, res, next)
+middleware -> middleware: Extract token from header
+alt Token not provided
+    middleware -> server: Respond 401 Unauthorized
+else Token provided
+    middleware -> jwt: Verify token with secret
+    alt Token invalid/expired
+        jwt -> middleware: Error
+        middleware -> server: Respond 403 Forbidden
+    else Token valid
+        jwt -> middleware: User data
+        middleware -> server: Add user to request
+        server -> middleware: requireAdmin(req, res, next)
+        alt User is admin
+            middleware -> server: Call next()
+            server -> client: Respond with resource
+        else User is not admin
+            middleware -> server: Respond 403 Forbidden
+        end
+    end
+end
+
+@enduml
