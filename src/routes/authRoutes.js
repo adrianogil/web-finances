@@ -3,10 +3,32 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../models/userModel');
+const { authenticateToken, getAuthToken } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 const salt = 10;
+const AUTH_COOKIE_NAME = 'authToken';
+const AUTH_COOKIE_MAX_AGE_MS = 60 * 60 * 1000;
+
+function getAuthCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: AUTH_COOKIE_MAX_AGE_MS,
+    path: '/',
+  };
+}
+
+function getClearAuthCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  };
+}
 
 function hashPassword(password, salt) {
     const saltBuffer = Buffer.from(salt.toString(), 'hex'); // Gera o buffer do salt
@@ -59,10 +81,6 @@ router.post('/login', async (req, res, next) => {
     const inputHash = hashPassword(password, salt);
     const isPasswordValid = inputHash === user.password;
 
-    console.log('Test');
-    console.log(user.password);
-    console.log(inputHash);
-
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Senha incorreta.' });
     }
@@ -74,7 +92,38 @@ router.post('/login', async (req, res, next) => {
       { expiresIn: '1h' } // Token expira em 1 hora
     );
 
-    res.json({ token, userName: user.full_name, message: 'Login realizado com sucesso.' });
+    res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions());
+    const responseBody = { userName: user.full_name, message: 'Login realizado com sucesso.' };
+    if (req.body.includeToken === true || req.query.includeToken === 'true') {
+      responseBody.token = token;
+    }
+
+    res.json(responseBody);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/logout', (req, res) => {
+  res.clearCookie(AUTH_COOKIE_NAME, getClearAuthCookieOptions());
+  res.json({ message: 'Logout realizado com sucesso.' });
+});
+
+router.get('/me', authenticateToken, async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'email', 'full_name'],
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    res.json({
+      id: user.id,
+      email: user.email,
+      userName: user.full_name,
+    });
   } catch (error) {
     next(error);
   }
@@ -82,7 +131,7 @@ router.post('/login', async (req, res, next) => {
 
 // Rota para verificar o token JWT
 router.get('/verify', (req, res) => {
-  const token = req.headers['authorization']?.split(' ')[1];
+  const token = getAuthToken(req);
 
   if (!token) {
     return res.status(401).json({ error: 'Token não fornecido.' });

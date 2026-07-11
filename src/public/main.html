@@ -369,11 +369,10 @@
     }
 
     try {
-        const response = await fetch('/api/financial-records', {
+        const response = await authenticatedFetch('/api/financial-records', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ description, amount, type, date, account, category })
         });
@@ -392,11 +391,6 @@
     }
 });
 
-const userNameElement = document.getElementById('user-name');
-const userName = localStorage.getItem('userName');
-if (userName) {
-    userNameElement.textContent = JSON.parse(userName);
-}
               </script>
         </main>
     </div>

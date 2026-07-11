@@ -32,9 +32,18 @@ function changeMonth(direction) {
     fetchFinancialRecords(currentMonth, year);
   }
 
-function logout() {
+async function logout() {
     alert("Você será desconectado. Até logo!");
-    // Aqui você pode adicionar a lógica de logout real
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'same-origin'
+        });
+    } catch (error) {
+        console.error('Erro ao encerrar sessão:', error);
+    }
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userName');
     window.location.href = 'login.html';
 }
 
@@ -61,25 +70,48 @@ document.addEventListener('click', function(event) {
     }
 });
 
-const token = localStorage.getItem('jwtToken');
+function isAuthFailure(response) {
+    return response.status === 401 || response.status === 403;
+}
 
-if (!token) {
-    alert('Usuário não autenticado. Por favor, faça login.');
-    window.location.href = 'login.html';
+function authenticatedFetch(url, options = {}) {
+    return fetch(url, {
+        ...options,
+        credentials: 'same-origin',
+        headers: {
+            ...(options.headers || {})
+        }
+    });
+}
+
+async function loadCurrentUser() {
+    const response = await authenticatedFetch('/api/auth/me');
+    if (isAuthFailure(response)) {
+        alert('Usuário não autenticado. Por favor, faça login.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    if (!response.ok) {
+        throw new Error('Erro ao carregar usuário autenticado.');
+    }
+
+    const user = await response.json();
+    const userNameElement = document.getElementById('user-name');
+    if (userNameElement && user.userName) {
+        userNameElement.textContent = user.userName;
+    }
 }
 
 async function fetchAccounts() {
     try {
-        const response = await fetch('/api/accounts', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await authenticatedFetch('/api/accounts', {
+            method: 'GET'
         });
 
         console.log(response);
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -131,16 +163,15 @@ async function addAccount(event) {
     }
 
     try {
-        const response = await fetch('/api/accounts', {
+        const response = await authenticatedFetch('/api/accounts', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ name: accountName, type: accountType })
         });
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -162,14 +193,11 @@ async function deleteAccount(accountId) {
     if (!confirm('Tem certeza de que deseja excluir esta conta?')) return;
 
     try {
-        const response = await fetch(`/api/accounts/${accountId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await authenticatedFetch(`/api/accounts/${accountId}`, {
+            method: 'DELETE'
         });
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -189,14 +217,11 @@ async function deleteAccount(accountId) {
 // Função para buscar categorias
 async function fetchCategories() {
     try {
-        const response = await fetch('/api/categories', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await authenticatedFetch('/api/categories', {
+            method: 'GET'
         });
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -248,16 +273,15 @@ async function addCategory(event) {
     }
 
     try {
-        const response = await fetch('/api/categories', {
+        const response = await authenticatedFetch('/api/categories', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ name: categoryName })
         });
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -280,14 +304,11 @@ async function deleteCategory(categoryId) {
     if (!confirm('Tem certeza de que deseja excluir esta categoria?')) return;
 
     try {
-        const response = await fetch(`/api/categories/${categoryId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await authenticatedFetch(`/api/categories/${categoryId}`, {
+            method: 'DELETE'
         });
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -306,15 +327,14 @@ async function deleteCategory(categoryId) {
 
 async function fetchFinancialRecords(month, year) {
     try {
-        const response = await fetch(`/api/financial-records?month=${month}&year=${year}`, {
+        const response = await authenticatedFetch(`/api/financial-records?month=${month}&year=${year}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -415,14 +435,11 @@ async function deleteFinancialRecord(recordId) {
     if (!confirm('Tem certeza de que deseja excluir este registro financeiro?')) return;
 
     try {
-        const response = await fetch(`/api/financial-records/${recordId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await authenticatedFetch(`/api/financial-records/${recordId}`, {
+            method: 'DELETE'
         });
 
-        if (response.status === 403) {
+        if (isAuthFailure(response)) {
             logout()
             return; // Stop further execution
         }
@@ -486,6 +503,9 @@ function updateCharts(records) {
     balanceChart.data.datasets[0].data = balances;
     balanceChart.update();
 }
+
+// Carrega usuário autenticado ao inicializar
+loadCurrentUser();
 
 // Carrega as contas ao inicializar
 fetchAccounts();

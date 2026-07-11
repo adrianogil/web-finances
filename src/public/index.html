@@ -28,6 +28,7 @@
             try {
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -37,10 +38,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Salva o token JWT no localStorage
-                    localStorage.setItem('jwtToken', data.token);
-                    localStorage.setItem('userName', JSON.stringify(data.userName));
-
                     alert('Login realizado com sucesso!');
                     window.location.href = 'main.html'; // Redireciona para a página principal
                 } else {

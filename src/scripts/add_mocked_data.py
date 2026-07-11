@@ -108,7 +108,8 @@ def login(user_email="teste@email.com", password="jyw7axj8zfz3huj.PBU"):
     ## Login
     user_data = {
         "email": user_email,
-        "password": password
+        "password": password,
+        "includeToken": True
     }
     response = request_post(url=f"{backend_url}/api/auth/login", payload=user_data)
     print(response)

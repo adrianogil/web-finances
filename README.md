@@ -29,12 +29,16 @@ A arquitetura deste sistema é composta pelos seguintes componentes:
 - A API segue boas práticas RESTful e está documentada utilizando o padrão Swagger (veja o arquivo src/swagger.yaml).
 
 ## Autenticação
-O sistema utiliza autenticação baseada em JWT (JSON Web Token). O fluxo é descrito no diagrama abaixo:
+O sistema utiliza autenticação baseada em JWT (JSON Web Token). Para o navegador, o JWT é gravado em um cookie `httpOnly` (`authToken`) com `SameSite=Lax`, evitando armazenamento em `localStorage` e reduzindo exposição a scripts em caso de XSS. Em produção, o cookie também é marcado como `Secure`.
+
+Clientes de API e scripts ainda podem usar o cabeçalho `Authorization: Bearer <token>`. Para compatibilidade, a rota de login só retorna o token no corpo da resposta quando isso é solicitado explicitamente com `includeToken: true` no JSON ou `?includeToken=true` na query string.
+
+O fluxo é descrito no diagrama abaixo:
 
 ![](diagrams/auth.png)
 
-1. O cliente envia o token JWT no cabeçalho da requisição HTTP (formato: Authorization: Bearer <token>).
-2. O middleware authenticateToken verifica o token:
+1. O navegador autentica usando o cookie `authToken`; scripts podem enviar o token JWT no cabeçalho da requisição HTTP (formato: Authorization: Bearer <token>).
+2. O middleware authenticateToken verifica o token recebido por cookie ou cabeçalho:
     - Se o token for inválido ou estiver ausente, a requisição é negada.
     - Caso contrário, os dados do usuário são anexados ao objeto da requisição.
 3. O middleware requireAdmin verifica permissões para recursos que exigem privilégios administrativos.
